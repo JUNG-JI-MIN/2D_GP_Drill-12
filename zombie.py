@@ -57,6 +57,8 @@ class Zombie:
 
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % FRAMES_PER_ACTION
+        self.bt.run() # 매 프레임마다 행동트리를 루트부터 실행시킨다.
+
         # fill here
 
 
@@ -81,31 +83,45 @@ class Zombie:
 
 
     def set_target_location(self, x=None, y=None):
-        # 여기를 채우시오.
-        pass
+        if x is None or y is None:
+            raise ValueError('Location should be given')
+        self.tx, self.ty = x, y
+        return BehaviorTree.SUCCESS
 
 
-
+ ## 거리비교 함수
     def distance_less_than(self, x1, y1, x2, y2, r):
-        # 여기를 채우시오.
+        distance = (x1-x2)**2 + (y1-y2)**2
+        return distance < (PIXEL_PER_METER * r) ** 2
         pass
 
 
 
     def move_little_to(self, tx, ty):
-        # 여기를 채우시오.
+        # frame time 을 이용해서 이동 거리 계산
+        self.dir = math.atan2(ty - self.y, tx - self.x)
+        distance = RUN_SPEED_PPS * game_framework.frame_time
+        self.x += distance * math.cos(self.dir)
+        self.y += distance * math.sin(self.dir)
         pass
 
 
 
     def move_to(self, r=0.5):
         # 여기를 채우시오.
+        self.state = 'Walk' # 디버그 용도
+        self.move_little_to(self.tx,self.ty) # 목적지로 조금 이동
+        if self.distance_less_than(self.tx,self.ty,self.x,self.y,r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
         pass
 
 
 
     def set_random_location(self):
-        # 여기를 채우시오.
+        self.tx, self.ty = random.randint(100,1000), random.randint(100,924)
+        return BehaviorTree.SUCCESS
         pass
 
 
@@ -125,7 +141,17 @@ class Zombie:
 
 
     def build_behavior_tree(self):
-        # 여기를 채우시오.
+        # 목표 지점을 (1000,1000)으로 설정하는 액션 노드를 생성.
+        a1 = Action('Set Target Location', self.set_target_location,1000,1000)
+        a2 = Action('Move To Target', self.move_to,0.5)
+
+        move_to_target_location = Sequence('Move To Target Location', a1, a2)
+
+        a3 = Action('Set Random Location', self.set_random_location)
+
+        wander = Sequence('Wander',a3,a2)
+        root = wander
+        self.bt = BehaviorTree(root)
         pass
 
 
