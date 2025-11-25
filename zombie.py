@@ -157,13 +157,13 @@ class Zombie:
             return BehaviorTree.RUNNING # 디버그 용도
 
         pass
-    def flee_from_boy(self):
+    def flee_from_boy(self,r=7.0):
         self.state = 'Walk'  # 디버그 용도
         self.flee_little_from(common.boy.x, common.boy.y)  # 목적지로 조금 이동
         if self.distance_less_than(common.boy.x, common.boy.y, self.x, self.y, r):
-            return BehaviorTree.SUCCESS
+            return BehaviorTree.RUNNING
         else:
-            return BehaviorTree.RUNNING  # 디버그 용도
+            return BehaviorTree.SUCCESS  # 디버그 용도
 
     def get_patrol_location(self):
         self.tx, self.ty = self.patrol_locations[self.loc_no]
@@ -205,7 +205,9 @@ class Zombie:
 
         chase_boy_if_nearby_ball = Sequence('소년 추적 및 공 처리',c1,ball_process)
 
-        root = chase_ball_boy
+        cahes_or_patrol_ball = Selector('추적 아니면 순찰 및 공 처리',chase_boy_if_nearby_ball,patrol)
+
+        root = cahes_or_patrol_ball
         
         self.bt = BehaviorTree(root)
         pass
