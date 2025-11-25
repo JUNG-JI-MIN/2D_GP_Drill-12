@@ -184,7 +184,7 @@ class Zombie:
 
         c2 = Condition('소년이 공을 더 많이 가지고 있는가?', self.if_boy_ball)
 
-        c
+        chase_ball_boy = Sequence('공을 더 많이 가진 소년 추적',c2,a4)
 
         root = chase_or_patrol
         
