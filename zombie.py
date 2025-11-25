@@ -106,6 +106,12 @@ class Zombie:
         self.x += distance * math.cos(self.dir)
         self.y += distance * math.sin(self.dir)
         pass
+    def flee_little_from(self,tx, ty):
+        self.state = 'Walk'
+        self.dir = math.atan2(self.y - ty,self.x - tx)
+        distance = RUN_SPEED_PPS * game_framework.frame_time
+        self.x += distance * math.cos(self.dir)
+        self.y += distance * math.sin(self.dir)
 
 
 
@@ -136,7 +142,7 @@ class Zombie:
             return BehaviorTree.FAIL
 
     def if_boy_ball(self):
-        if common.boy.ball_count > self.ball_count:
+        if common.boy.ball_count < self.ball_count:
             return BehaviorTree.SUCCESS
         else:
             return BehaviorTree.FAIL
@@ -151,7 +157,13 @@ class Zombie:
             return BehaviorTree.RUNNING # 디버그 용도
 
         pass
-
+    def flee_from_boy(self):
+        self.state = 'Walk'  # 디버그 용도
+        self.flee_little_from(common.boy.x, common.boy.y)  # 목적지로 조금 이동
+        if self.distance_less_than(common.boy.x, common.boy.y, self.x, self.y, r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING  # 디버그 용도
 
     def get_patrol_location(self):
         self.tx, self.ty = self.patrol_locations[self.loc_no]
@@ -172,6 +184,7 @@ class Zombie:
 
         c1 = Condition('소년이 근처에 있는가?', self.if_boy_nearby,7)
         a4 = Action('접근', self.move_to_boy)
+
         chase_boy_if_nearby = Sequence('소년을 추적',c1,a4)
 
         chase_or_wander = Selector('추적 아니면 배회',chase_boy_if_nearby,wander)
@@ -181,12 +194,18 @@ class Zombie:
         patrol = Sequence('Patrol',a5,a2)
 
         chase_or_patrol = Selector('추적 아니면 순찰',chase_boy_if_nearby,patrol)
-
+# 시작
         c2 = Condition('소년이 공을 더 많이 가지고 있는가?', self.if_boy_ball)
 
-        chase_ball_boy = Sequence('공을 더 많이 가진 소년 추적',c2,a4)
+        a6 = Action('도망', self.flee_from_boy)
 
-        root = chase_or_patrol
+        chase_ball_boy = Sequence('공이 적은 소년 추적',c2,a4)
+
+        ball_process = Selector('공 처리',chase_ball_boy,a6)
+
+        chase_boy_if_nearby_ball = Sequence('소년 추적 및 공 처리',c1,ball_process)
+
+        root = chase_ball_boy
         
         self.bt = BehaviorTree(root)
         pass
