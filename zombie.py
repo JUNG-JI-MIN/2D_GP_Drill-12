@@ -183,7 +183,7 @@ class Zombie:
 
         a3 = Action('Set Random Location', self.set_random_location)
 
-        wander = Sequence('Wander',a3,a2)
+        wander = Sequence('Wander',a2,a3)
 
         c1 = Condition('소년이 근처에 있는가?', self.if_boy_nearby,7)
         a4 = Action('접근', self.move_to_boy)
@@ -208,7 +208,7 @@ class Zombie:
 
         chase_boy_if_nearby_ball = Sequence('소년 추적 및 공 처리',c1,ball_process)
 
-        cahes_or_patrol_ball = Selector('추적 아니면 순찰 및 공 처리',chase_boy_if_nearby_ball,patrol)
+        cahes_or_patrol_ball = Selector('추적 아니면 순찰 및 공 처리',chase_boy_if_nearby_ball,wander)
 
         root = cahes_or_patrol_ball
         
