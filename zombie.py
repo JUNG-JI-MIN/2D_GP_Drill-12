@@ -194,7 +194,7 @@ class Zombie:
 
         a5 = Action('순찰 위치 가져오기', self.get_patrol_location)
 
-        patrol = Sequence('Patrol',a5,a2)
+        patrol = Sequence('Patrol',a2,a5)
 
         chase_or_patrol = Selector('추적 아니면 순찰',chase_boy_if_nearby,patrol)
 # 시작
@@ -209,8 +209,6 @@ class Zombie:
         chase_boy_if_nearby_ball = Sequence('소년 추적 및 공 처리',c1,ball_process)
 
         cahes_or_patrol_ball = Selector('추적 아니면 순찰 및 공 처리',chase_boy_if_nearby_ball,patrol)
-
-        chase_or_wander = Selector('추적 아니면 배회', chase_boy_if_nearby, wander)
 
         root = cahes_or_patrol_ball
         
